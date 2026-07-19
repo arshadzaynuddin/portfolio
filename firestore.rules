@@ -1,0 +1,35 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function isAdmin() {
+      return request.auth != null
+        && request.auth.token.email in [
+          'arshadzaynuddin@gmail.com',
+          'muhammedarshadh@gmail.com'
+        ];
+    }
+
+    // Odoo apps gallery: anyone can read, only admins can write (via /admin page).
+    match /odoo_apps/{appId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // Featured projects: same policy.
+    match /projects/{projectId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // Testimonials: same policy.
+    match /testimonials/{testimonialId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // Everything else is locked down.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
